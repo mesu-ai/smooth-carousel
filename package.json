@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "smooth-carousel",
+  "version": "0.0.0-beta.1",
+  "type": "module",
+  "description": "Smooth Carousel is a highly customizable and user-friendly carousel component for React. It provides a smooth scrolling experience with a variety of configuration options, including autoplay, infinite loop, and responsive design. Perfect for showcasing images, products, or any other content in a sleek and professional manner. Ideal for developers looking to enhance their web applications with an engaging and interactive carousel feature.",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "build:dev": "rollup -c --environment NODE_ENV:development",
+    "build": "rollup -c --environment NODE_ENV:production",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mesu-ai/smooth-carousel.git"
+  },
+  "keywords": [
+    "carousel",
+    "smooth",
+    "carousel",
+    "react",
+    "carousel",
+    "next",
+    "carousel",
+    "slider",
+    "slide",
+    "show"
+  ],
+  "author": "mesu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mesu-ai/smooth-carousel/issues"
+  },
+  "homepage": "https://github.com/mesu-ai/smooth-carousel#readme",
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rollup": "^4.34.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.8.1"
+  }
+}

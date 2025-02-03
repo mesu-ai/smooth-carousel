@@ -1,0 +1,34 @@
+
+# Ignore node modules
+node_modules/
+
+# Ignore distribution and build files
+/dist
+
+# Ignore lock files (choose one depending on whether you're using npm or yarn)
+package-lock.json
+yarn.lock
+
+# Ignore environment variables and secrets
+.env
+.env.local
+
+# Ignore temporary files and IDE/editor-specific settings
+.DS_Store        # macOS-specific temporary file
+*.log            # Log files
+.vscode/         # VSCode settings
+.idea/           # IntelliJ-based IDE settings
+*.swp            # Vim swap files
+
+# Ignore compiled files (for TypeScript or other compiled languages)
+*.tsbuildinfo    # TypeScript build info file (optional, if you're using TypeScript)
+
+# Ignore tarballs
+*.tgz
+
+# Ignore npm and yarn debug files
+npm-debug.log*
+yarn-debug.log*
+
+# Coverage output (if running tests)
+coverage/
