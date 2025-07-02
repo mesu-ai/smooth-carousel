@@ -5,6 +5,7 @@ import React, {
   useCallback,
   Children,
   useMemo,
+  TransitionEvent,
 } from 'react';
 import '../styles/carousel.css';
 import PrevIcon from '../assets/icons/PrevIcon';
@@ -17,7 +18,8 @@ export interface CarouselProps {
   cardWidth?: number;
   gap?: number;
   autoplayInterval?: number;
-  autoplayEnabled?: boolean;
+  autoPlay?: boolean;
+  dots?: boolean;
   className?: string;
 }
 
@@ -28,8 +30,9 @@ const Carousel: React.FC<CarouselProps> = ({
   cardWidth,
   gap = 20,
   autoplayInterval = 3000,
-  autoplayEnabled = true,
-  className = '',
+  autoPlay = true,
+  dots = true,
+  className = "",
 }) => {
   const [position, setPosition] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -60,25 +63,14 @@ const Carousel: React.FC<CarouselProps> = ({
         ? cardWidth
         : slidesPerView
         ? (containerWidth - gap * (slidesPerView - 1)) / slidesPerView
-        : (containerWidth - gap * (Math.floor(containerWidth / (200 + gap)) - 1)) /
+        : (containerWidth -
+            gap * (Math.floor(containerWidth / (200 + gap)) - 1)) /
           Math.floor(containerWidth / (200 + gap));
 
       setSlideWidth(newSlideWidth);
       setPosition(0);
     }
   }, [slidesPerView, cardWidth, gap]);
-
-  useEffect(() => {
-    updateSlideWidth();
-    const resizeObserver = new ResizeObserver(updateSlideWidth);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-    return () => resizeObserver.disconnect();
-  }, [updateSlideWidth]);
-
-
-  // console.log({resetPoint, slideWidth, gap});
 
   const moveToSlide = useCallback(
     (newPosition: number) => {
@@ -93,6 +85,7 @@ const Carousel: React.FC<CarouselProps> = ({
     () => moveToSlide(position + slideWidth + gap),
     [position, slideWidth, gap, moveToSlide]
   );
+
   const moveToPrevSlide = useCallback(() => {
     if (position === 0) {
       moveToSlide(resetPoint - slideWidth - gap);
@@ -101,15 +94,19 @@ const Carousel: React.FC<CarouselProps> = ({
     }
   }, [position, slideWidth, gap, moveToSlide, resetPoint]);
 
-  const handleTransitionEnd = () => {
+  const handleTransitionEnd = (e: TransitionEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    // console.log('handleTransitionEnd', position);
     setIsTransitioning(false);
+    const totalSlides = slides.length;
+    const singleSlideWidth = slideWidth + gap;
 
-    if (position >= resetPoint) {
-      console.log('position >= resetPoint', position, resetPoint);
-      setPosition(0); // Loop back smoothly
-    } else if (position <= 0) {
-      console.log('position < 0', position, resetPoint);
-      setPosition(resetPoint - (slideWidth + gap)); // Loop to the last item
+    if (position >= totalSlides * 2 * singleSlideWidth) {
+      // Moved past the last original slide
+      setPosition(totalSlides * singleSlideWidth);
+    } else if (position < totalSlides * singleSlideWidth) {
+      // Moved before the first original slide
+      setPosition((totalSlides * 2 - 1) * singleSlideWidth);
     }
   };
 
@@ -135,24 +132,38 @@ const Carousel: React.FC<CarouselProps> = ({
     }
   };
 
-    // Keyboard navigation
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (document.activeElement?.closest('#smooth-carousel')) {
-          if (e.key === 'ArrowLeft') {
-            moveToPrevSlide();
-          } else if (e.key === 'ArrowRight') {
-            moveToNextSlide();
-          }
-        }
-      };
-  
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [moveToNextSlide, moveToPrevSlide]);
+  useEffect(() => {
+    const initialPosition = slides.length * (slideWidth + gap);
+    setPosition(initialPosition);
+  }, [slideWidth, gap, slides.length]);
 
   useEffect(() => {
-    if (autoplayEnabled && !isHovered && !isTransitioning) {
+    updateSlideWidth();
+    const resizeObserver = new ResizeObserver(updateSlideWidth);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => resizeObserver.disconnect();
+  }, [updateSlideWidth]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.closest("#smooth-carousel")) {
+        if (e.key === "ArrowLeft") {
+          moveToPrevSlide();
+        } else if (e.key === "ArrowRight") {
+          moveToNextSlide();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [moveToNextSlide, moveToPrevSlide]);
+
+  useEffect(() => {
+    if (autoPlay && !isHovered && !isTransitioning) {
       autoplayTimeoutRef.current = setTimeout(
         moveToNextSlide,
         autoplayInterval
@@ -161,7 +172,14 @@ const Carousel: React.FC<CarouselProps> = ({
     return () => {
       if (autoplayTimeoutRef.current) clearTimeout(autoplayTimeoutRef.current);
     };
-  }, [position, isHovered, autoplayEnabled, autoplayInterval, moveToNextSlide, isTransitioning]);
+  }, [
+    position,
+    isHovered,
+    autoPlay,
+    autoplayInterval,
+    moveToNextSlide,
+    isTransitioning,
+  ]);
 
   return (
     <div
@@ -211,13 +229,18 @@ const Carousel: React.FC<CarouselProps> = ({
         >
           <NextIcon width={20} height={20} />
         </button>
-        <div className="dots-container">
-          {slides.map((_, index) => (
+        <div className="dots-container" style={{ display: dots ? 'flex' : 'none' }}>
+          {dots && slides.map((_, index) => (
             <button
               type="button"
               key={index}
-              className={`dot-button ${Math.floor(position / (slideWidth + gap)) % slides.length === index ? 'active' : ''}`}
-              onClick={() => moveToSlide(index * (slideWidth + gap))}
+              className={`dot-button ${
+                Math.floor(position / (slideWidth + gap)) % slides.length ===
+                index
+                  ? "active"
+                  : ""
+              }`}
+              onClick={() =>moveToSlide((slides.length + index) * (slideWidth + gap))}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
